@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LinqQuiz.Library
-{
-    public static class Quiz
-    {
+namespace LinqQuiz.Library {
+    public static class Quiz {
         /// <summary>
         /// Returns all even numbers between 1 and the specified upper limit.
         /// </summary>
@@ -14,9 +11,13 @@ namespace LinqQuiz.Library
         /// <exception cref="ArgumentOutOfRangeException">
         ///     Thrown if <paramref name="exclusiveUpperLimit"/> is lower than 1.
         /// </exception>
-        public static int[] GetEvenNumbers(int exclusiveUpperLimit)
-        {
-            throw new NotImplementedException();
+        public static int[] GetEvenNumbers(int exclusiveUpperLimit) {
+            return exclusiveUpperLimit <= 0
+                ? throw new ArgumentOutOfRangeException(nameof(exclusiveUpperLimit),
+                    "Upper limit must be greater than 0")
+                : Enumerable.Range(1, exclusiveUpperLimit - 1)
+                    .Where(i => i % 2 == 0)
+                    .ToArray();
         }
 
         /// <summary>
@@ -31,9 +32,16 @@ namespace LinqQuiz.Library
         /// The result is an empty array if <paramref name="exclusiveUpperLimit"/> is lower than 1.
         /// The result is in descending order.
         /// </remarks>
-        public static int[] GetSquares(int exclusiveUpperLimit)
-        {
-            throw new NotImplementedException();
+        public static int[] GetSquares(int exclusiveUpperLimit) {
+            return exclusiveUpperLimit > Math.Sqrt(int.MaxValue)
+                    ? throw new OverflowException()
+                    : exclusiveUpperLimit <= 0
+                        ? Array.Empty<int>()
+                        : Enumerable.Range(1, exclusiveUpperLimit - 1)
+                            .Select(i => i * i)
+                            .Where(i => i % 7 == 0)
+                            .OrderByDescending(i => i)
+                            .ToArray();
         }
 
         /// <summary>
@@ -50,9 +58,18 @@ namespace LinqQuiz.Library
         /// <see cref="FamilySummary.AverageAge"/> is set to 0 if <see cref="IFamily.Persons"/>
         /// in <paramref name="families"/> is empty.
         /// </remarks>
-        public static FamilySummary[] GetFamilyStatistic(IReadOnlyCollection<IFamily> families)
-        {
-            throw new NotImplementedException();
+        public static FamilySummary[] GetFamilyStatistic(IReadOnlyCollection<IFamily> families) {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            // It isn't always false
+            return families == null
+                ? throw new ArgumentNullException(nameof(families), "families cannot bo null")
+                : families.Select(f => new FamilySummary {
+                    FamilyID = f.ID,
+                    NumberOfFamilyMembers = f.Persons.Count,
+                    AverageAge = f.Persons.Count == 0
+                        ? 0
+                        : f.Persons.Select(p => p.Age).Average()
+                }).ToArray();
         }
 
         /// <summary>
@@ -68,9 +85,13 @@ namespace LinqQuiz.Library
         /// letters that are contained in <paramref name="text"/> (i.e. there must not be a collection element
         /// with number of occurrences equal to zero.
         /// </remarks>
-        public static (char letter, int numberOfOccurrences)[] GetLetterStatistic(string text)
-        {
-            throw new NotImplementedException();
+        public static (char letter, int numberOfOccurrences)[] GetLetterStatistic(string text) {
+            return text
+                .ToUpper()
+                .Where(c => c >= 'A' && c <= 'Z')
+                .GroupBy(c => c)
+                .Select(g => (g.Key, g.Count()))
+                .ToArray();
         }
     }
 }
